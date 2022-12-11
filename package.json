@@ -1,7 +1,6 @@
 {
   "name": "kivibot-plugin-music",
   "version": "0.0.0",
-  "private": true,
   "description": "QQ 机器人框架 KiviBot 的点歌插件",
   "main": "lib/index.js",
   "repository": "KiviBotLab/kivibot-plugin-music",

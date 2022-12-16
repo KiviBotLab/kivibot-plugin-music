@@ -1,7 +1,7 @@
 {
   "name": "kivibot-plugin-music",
-  "version": "0.0.0",
-  "description": "QQ 机器人框架 KiviBot 的点歌插件",
+  "version": "1.0.0",
+  "description": "QQ 机器人框架 KiviBot 的点歌插件，支持六大主流平台的歌曲分享和查歌词的功能",
   "main": "lib/index.js",
   "repository": "KiviBotLab/kivibot-plugin-music",
   "homepage": "https://github.com/KiviBotLab/kivibot-plugin-music#readme",
@@ -28,5 +28,8 @@
     "rimraf": "^3.0.2",
     "tsc-alias": "^1.8.1",
     "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "html-entities": "^2.3.3"
   }
 }

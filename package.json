@@ -1,6 +1,6 @@
 {
   "name": "kivibot-plugin-music",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "QQ 机器人框架 KiviBot 的点歌插件，支持六大主流平台的歌曲分享和查歌词的功能",
   "main": "lib/index.js",
   "repository": "KiviBotLab/kivibot-plugin-music",

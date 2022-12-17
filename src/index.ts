@@ -2,7 +2,8 @@ import { KiviPlugin, segment, makeForwardMsg } from '@kivibot/core'
 
 import { fetchBiliShare, fetchLyric, fetchSongId, shareKuwoSong, shareMiGuSong } from './services'
 
-const plugin = new KiviPlugin('点歌', '0.0.0')
+const { version } = require('../package.json')
+const plugin = new KiviPlugin('点歌', version)
 
 const config = {
   /** 默认点歌平台，可选：qq 163 migu kugou kuwo bili */
@@ -54,9 +55,16 @@ plugin.onMounted(bot => {
   Object.assign(config, plugin.loadConfig())
   plugin.saveConfig(config)
 
-  plugin.onMatch('点歌', e => {
-    const list = [...sources.map(e => `${e.name}点歌<歌曲名>`), '搜歌词<歌曲名>'].join('\n')
-    e.reply(list, true)
+  plugin.onAdminCmd('/music', (e, params) => {
+    const platform = String(params[0])
+    if (platform && sources.map(e => e.platform as string).includes(platform)) {
+      config.default = platform
+      plugin.saveConfig(config)
+
+      e.reply(`已切换平台为 ${platform}，重载后生效`, true)
+    } else {
+      e.reply(`/music <platform>\n当前平台：${config.default}`, true)
+    }
   })
 
   sources.forEach(({ platform, cmd, defaultCmd }) => {
@@ -64,18 +72,21 @@ plugin.onMounted(bot => {
       cmd = defaultCmd
     }
 
+    const NotFound = `找不到搜索结果，请尝试更换平台\n当前搜索平台：${platform}`
+
     plugin.onMatch(cmd, async e => {
       const songName = e.raw_message.replace(cmd, '').trim()
 
       if (!songName) {
-        return
+        const list = [...sources.map(e => `${e.name}点歌<歌曲名>`), '搜歌词<歌曲名>'].join('\n')
+        return e.reply(list, true)
       }
 
       if (platform === 'bili') {
         const share = await fetchBiliShare(songName)
 
         if (!share) {
-          e.reply('找不到搜索结果，请尝试更换平台', true)
+          e.reply(NotFound, true)
         } else {
           plugin.log('bili share: ', share.title)
           const { url, title, image, content } = share
@@ -87,7 +98,7 @@ plugin.onMounted(bot => {
         plugin.log('songId: ', id, 'platform: ', platform)
 
         if (!id) {
-          return e.reply('找不到搜索结果，请尝试更换平台', true)
+          return e.reply(NotFound, true)
         }
 
         if (e.message_type === 'group') {
@@ -121,7 +132,7 @@ plugin.onMounted(bot => {
     const lyric = await fetchLyric(songName)
 
     if (!lyric) {
-      return e.reply('找不到搜索结果', true)
+      return e.reply('歌词搜索结果为空', true)
     }
 
     const lyricMsg = [lyric, '歌词数据来源于 QQ 音乐'].map(msg => ({
@@ -130,21 +141,9 @@ plugin.onMounted(bot => {
       message: msg
     }))
 
-    const msg = await makeForwardMsg.bind(bot)(lyricMsg, `${songName} 的歌词`, '轻按查看详情')
+    const msg = await makeForwardMsg.bind(bot)(lyricMsg, `【${songName}】的歌词`, '轻按查看详情')
 
     e.reply(msg)
-  })
-
-  plugin.onAdminCmd('/music', (e, params) => {
-    const platform = String(params[0])
-    if (platform && sources.map(e => e.platform as string).includes(platform)) {
-      config.default = platform
-      plugin.saveConfig(config)
-
-      e.reply(`已切换平台为 ${platform}，重载后生效`, true)
-    } else {
-      e.reply('指令格式错误，/music <platform>', true)
-    }
   })
 })
 
